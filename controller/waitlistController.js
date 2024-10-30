@@ -66,13 +66,53 @@ const waitlistInfo = async (req,res) =>{
     }
   });
 //};
-
-
-
-  } catch (error) {
+ } catch (error) {
     console.error(error);
     res.status(500).json({ message: "internal server error"});
   }
 };
 
-module.exports = waitlistInfo;
+const waitlists = async(req,res) => {
+ try {
+   const waitlists = await waitlist.find();
+   res.status(200).send(waitlists);
+  } catch (error) {
+   res.status(500).json({ message: "error getting waitlists"});
+ }
+};
+
+const deleteWaitlist = async(req,res) => {
+  console.log("delete request received");
+  const {email} = req.body; 
+  try {
+    const removedWaitlist = await waitlist.findOneAndDelete({email:email});
+    
+     if(!removedWaitlist){
+      return res.status(404).json({ message: "waitlist not found"});
+     }
+    res.status(200).json({ message: "waitlist deleted successfully"});
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "error deleting waitlist"});
+  }
+};
+
+
+const updatedWaitlist = async(req,res) => {
+  const id = req.params.id;
+  const { name, email} = req.body;
+
+  try {
+    const updatedWaitlist = await waitlist.findByIdAndUpdate(id, {name, email}, {new: true});
+
+    if(!updatedWaitlist){
+      return res.status(404).json({ message: "waitlist not found"});
+    }
+   res.status(200).send(updatedWaitlist); 
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "error updating waitlist"});
+  }
+};
+
+module.exports = {waitlistInfo, waitlists, deleteWaitlist, updatedWaitlist};
